@@ -1,4 +1,6 @@
-﻿Imports System
+﻿Imports System.Resources
+
+Imports System
 Imports System.Reflection
 Imports System.Runtime.InteropServices
 
@@ -10,12 +12,12 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyTitle("VBTools")> 
 <Assembly: AssemblyDescription("")> 
-<Assembly: AssemblyCompany("FAREVA")> 
+<Assembly: AssemblyCompany("")> 
 <Assembly: AssemblyProduct("VBTools")> 
-<Assembly: AssemblyCopyright("Copyright © FAREVA 2019")> 
+<Assembly: AssemblyCopyright("Copyright © 2019 ChatNoir76")> 
 <Assembly: AssemblyTrademark("")> 
 
-<Assembly: ComVisible(False)>
+<Assembly: ComVisible(False)> 
 
 'Le GUID suivant est pour l'ID de la typelib si ce projet est exposé à COM
 <Assembly: Guid("14b051ac-b96d-40eb-aad5-9ec69c3b55e9")> 
@@ -33,3 +35,5 @@ Imports System.Runtime.InteropServices
 
 '<Assembly: AssemblyVersion("1.0.0.0")> 
 <Assembly: AssemblyFileVersion("1.0.0.0")> 
+
+<Assembly: NeutralResourcesLanguageAttribute("fr")> 
