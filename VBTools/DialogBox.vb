@@ -9,6 +9,9 @@ Imports System.Drawing.Printing
 
 Namespace DialogBox
     Public Class ChoiceBox
+
+        Private Const ERR_CB_WINFROM = "Erreur lors de la construction de la fenêtre de dialogue"
+
         Protected WithEvents _Main As New Form
         Protected WithEvents BT_OK As New Button
         Protected WithEvents BT_Annuler As New Button
@@ -28,36 +31,46 @@ Namespace DialogBox
 #End Region
 
 #Region "Constructeur"
-        Public Sub New(ByVal RepertoireBase As String, Optional ByVal RemTreeView As Boolean = False)
+        ''' <summary>
+        ''' Ouverture d'une boite de dialogue 
+        ''' </summary>
+        ''' <param name="RepertoireBase">Chemin absolu du dossier ou va s'ouvrir la boite de dialogue</param>
+        ''' <param name="RemplirTreeView">Remplir la boite de dialogue avec les fichiers présents dans les dossiers</param>
+        ''' <remarks></remarks>
+        Public Sub New(ByVal RepertoireBase As String, Optional ByVal RemplirTreeView As Boolean = False)
             _RepAll = RepertoireBase
             _RepBase = Last(_RepAll, "\")
 
-            With _Main
-                .Size = New Size(686, 508)
-                .MinimumSize = .Size
-                .MaximumSize = .Size
+            Try
+                With _Main
+                    .Size = New Size(686, 508)
+                    .MinimumSize = .Size
+                    .MaximumSize = .Size
 
-                'TEXTBOX
-                Setup(TXT_Result, 496, 23, 0, 440)
-                TXT_Description.Multiline = True
-                Setup(TXT_Description, 670, 58, 0, 0)
-                TXT_Description.ReadOnly = True
-                TXT_Result.ReadOnly = True
+                    'TEXTBOX
+                    Setup(TXT_Result, 496, 23, 0, 440)
+                    TXT_Description.Multiline = True
+                    Setup(TXT_Description, 670, 58, 0, 0)
+                    TXT_Description.ReadOnly = True
+                    TXT_Result.ReadOnly = True
 
-                'TREEVIEW
-                Setup(TV, 670, 370, 0, 66)
-                If RemTreeView Then RemplissageTreeView()
+                    'TREEVIEW
+                    Setup(TV, 670, 370, 0, 66)
+                    If RemplirTreeView Then RemplissageTreeView()
 
-                'BOUTON
-                Setup(BT_Annuler, 75, 23, 502, 440)
-                BT_Annuler.Text = "Annuler"
-                Setup(BT_OK, 75, 23, 583, 440)
-                BT_OK.Text = "OK"
-                BT_OK.Enabled = False
+                    'BOUTON
+                    Setup(BT_Annuler, 75, 23, 502, 440)
+                    BT_Annuler.Text = "Annuler"
+                    Setup(BT_OK, 75, 23, 583, 440)
+                    BT_OK.Text = "OK"
+                    BT_OK.Enabled = False
 
-                'FORM PRINCIPALE
-                .Text = _RepAll
-            End With
+                    'FORM PRINCIPALE
+                    .Text = _RepAll
+                End With
+            Catch ex As Exception
+                Throw New VBToolsException(ERR_CB_WINFROM, ex)
+            End Try
         End Sub
 #End Region
 
