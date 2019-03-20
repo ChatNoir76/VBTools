@@ -182,7 +182,12 @@ Namespace DialogBox
         End Property
         Private ReadOnly Property NomComplet As String
             Get
-                Return TXT_Result.Text & "\" & TXT_Fichier.Text & TXT_Ext.Text
+                Dim NomFichier As New System.Text.StringBuilder
+                With NomFichier
+                    .Append(TXT_Result.Text).Append(Path.PathSeparator)
+                    .Append(TXT_Fichier.Text.Trim).Append(TXT_Ext.Text)
+                End With
+                Return NomFichier.ToString
             End Get
         End Property
         Overrides ReadOnly Property Resultat As String
@@ -264,17 +269,27 @@ Namespace DialogBox
         Private Sub VerifCanClickOK()
             If Not _CompleteLoad Then Exit Sub
             BT_OK.Enabled = False
-            If Not TXT_Fichier.Text = vbNullString And Not TXT_Result.Text = vbNullString And Not File.Exists(NomComplet) And Not File.Exists(NomComplet & ".crp") Then
+            If Not TXT_Fichier.Text = vbNullString And Not TXT_Result.Text = vbNullString And VerifNomFichier() Then
                 If BlackListOK() Then BT_OK.Enabled = True
             End If
-
         End Sub
+        Private Function VerifNomFichier() As Boolean
+
+            If File.Exists(NomComplet) Then Return False
+            If File.Exists(NomComplet & ".crp") Then Return False
+            Return True
+
+        End Function
         Private Function BlackListOK() As Boolean
+            'si la liste est null ou vide, pas de comparaison
             If IsNothing(_listeNomInterdit) Then Return True
             If _listeNomInterdit.Count = 0 Then Return True
+
+            'comparaison
             For Each Nom As String In _listeNomInterdit
                 If DossierComplet & "\" & Nom = NomComplet Then Return False
             Next
+
             Return True
         End Function
         Protected Overrides Sub RemplissageTreeView()

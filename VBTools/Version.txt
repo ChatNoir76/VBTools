@@ -1,0 +1,26 @@
+﻿--------------------------------------------------------------------------------------------
+20 Mars 19 : 1.1.0.0
+DialogBox:
+	Ajout de la méthode Trim + StringBuilder pour la property nomComplet
+	Création de la fonction VerifNomFichier()
+	Création de la classe VBToolsException
+
+--------------------------------------------------------------------------------------------
+20 Mars 19 : 1.0.0.0
+Création de la dll et intégration des classe DialogBox et GestionDataGridView
+
+Versionning (numéro à renseigner dans la classe _VBTools.vb) :
+	Chiffre 1 :
+		Version
+	
+	Chiffre 2 :
+		Modification Majeure AVEC risque d'incompatibilité
+		Ajout d'une Classe
+		
+	Chiffre 3 :
+		Modification Majeure SANS risque d'incompatibilité
+		Ajout Fonction
+
+	Chiffre 4 :
+		Modification Mineure
+		Résolution bug
