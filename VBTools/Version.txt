@@ -1,13 +1,18 @@
 ﻿--------------------------------------------------------------------------------------------
-20 Mars 19 : 1.1.0.0
+20 Mars 19 : 1.0.1.0 [Build 2]
 DialogBox:
+	Ajout copyright nouvelle licence MIT
+	Ancienne méthode non conforme déclarée obsolète
 	Ajout de la méthode Trim + StringBuilder pour la property nomComplet
 	Création de la fonction VerifNomFichier()
 	Création de la classe VBToolsException
+	Revu du code avec gestion des exceptions
+	amélioration des variables et accesseurs
 
 --------------------------------------------------------------------------------------------
-20 Mars 19 : 1.0.0.0
+20 Mars 19 : 1.0.0.0 [Build 1]
 Création de la dll et intégration des classe DialogBox et GestionDataGridView
+depuis l'ancienne dll ValdepharmTools
 
 Versionning (numéro à renseigner dans la classe _VBTools.vb) :
 	Chiffre 1 :
@@ -15,11 +20,13 @@ Versionning (numéro à renseigner dans la classe _VBTools.vb) :
 	
 	Chiffre 2 :
 		Modification Majeure AVEC risque d'incompatibilité
-		Ajout d'une Classe
+		Ajout / Modification d'une Classe
+		Ajout / Modification Fonction
 		
 	Chiffre 3 :
 		Modification Majeure SANS risque d'incompatibilité
-		Ajout Fonction
+		Ajout / Modification d'une Classe
+		Ajout / Modification Fonction
 
 	Chiffre 4 :
 		Modification Mineure
