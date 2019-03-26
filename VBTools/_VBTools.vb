@@ -1,4 +1,7 @@
-﻿'mettre le fichier texte à jour pour le changement de version
+﻿Imports System.Windows.Forms
+Imports VBTools.GestionDataGridView
+
+'mettre le fichier texte à jour pour le changement de version
 <Assembly: Reflection.AssemblyFileVersion("1.0.1.0")> 
 <Assembly: Reflection.AssemblyVersion("1.0.1.0")> 
 <Assembly: Reflection.AssemblyInformationalVersion("Build 2")> 
@@ -9,12 +12,10 @@ Module _VBTools
     Sub main()
         Console.WriteLine("---Début DU PROGRAMME---")
         Console.Read()
+
         Try
-            Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2", "Archivage.pdf", ".pdf", DialogBox.BoxSaveFile.ext.Remplace)
-            maBox.ShowDialog()
-            Console.WriteLine(maBox.Resultat)
-            Console.WriteLine(maBox.getFichierChoisi_NomSeul)
-            Console.WriteLine(maBox.getFichierChoisi_DepuisCheminRelatif)
+
+            testReflexionClasseAnonyme()
 
             Console.Read()
         Catch ex As VBToolsException
@@ -33,6 +34,54 @@ Module _VBTools
         End Try
 
     End Sub
+
+    Sub testDialogBox()
+        Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2", "Archivage.pdf", ".pdf", DialogBox.BoxSaveFile.ext.Remplace)
+        maBox.ShowDialog()
+        Console.WriteLine(maBox.Resultat)
+        Console.WriteLine(maBox.getFichierChoisi_NomSeul)
+        Console.WriteLine(maBox.getFichierChoisi_DepuisCheminRelatif)
+    End Sub
+
+    Sub testReflexionClasseAnonyme()
+        Dim _form As New Form
+        Dim maListe As New List(Of Object)
+        Dim monDGV As New DataGridView()
+        _form.Controls.Add(monDGV)
+
+        For i = 1 To 40
+            maListe.Add(New With {.id = i,
+                                 .name = "nom " & i,
+                                 .surname = "Prenom " & i})
+        Next
+
+        monDGV.DataSource = maListe
+
+        Dim monImp As New PrintDataGridView(monDGV)
+        monImp.Impression()
+
+    End Sub
+
+    Sub testDGV()
+        Dim _form As New Form
+        Dim maTable As New DataTable("Ma Data Table")
+        Dim monDGV As New DataGridView()
+
+        For i = 1 To 5
+            maTable.Columns.Add("colonne " & i, GetType(String))
+        Next
+
+        For l = 1 To 30
+            maTable.Rows.Add("ligne " & l, "c2l" & l, "3", "4", "5")
+        Next
+
+        _form.Controls.Add(monDGV)
+        monDGV.DataSource = maTable
+
+        Dim monImp As New PrintDataGridView(monDGV)
+        monImp.Impression()
+    End Sub
 End Module
+
 
 
