@@ -15,7 +15,7 @@ Module _VBTools
 
         Try
 
-            testReflexionClasseAnonyme()
+            testDialogBox()
 
             Console.Read()
         Catch ex As VBToolsException
@@ -36,11 +36,17 @@ Module _VBTools
     End Sub
 
     Sub testDialogBox()
-        Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2", "Archivage.pdf", ".pdf", DialogBox.BoxSaveFile.ext.Remplace)
+        Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2") With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
+
+
         maBox.ShowDialog()
-        Console.WriteLine(maBox.Resultat)
-        Console.WriteLine(maBox.getFichierChoisi_NomSeul)
+        Console.WriteLine(maBox.getFichierChoisi)
         Console.WriteLine(maBox.getFichierChoisi_DepuisCheminRelatif)
+        Console.WriteLine(maBox.getFichierChoisi_NomSeul)
+        Console.WriteLine(maBox.getFichierChoisi_NomSeulSansExtention)
+        Console.WriteLine(maBox.getRepertoireBaseAbsolu)
+        Console.WriteLine(maBox.getRepertoireBaseRelatif)
+
     End Sub
 
     Sub testReflexionClasseAnonyme()
@@ -57,7 +63,8 @@ Module _VBTools
 
         monDGV.DataSource = maListe
 
-        Dim monImp As New PrintDataGridView(monDGV)
+        Dim monImp As New PrintDataGridView2(monDGV)
+        monImp.Entete_Brush = New System.Drawing.SolidBrush(Drawing.Color.HotPink)
         monImp.Impression()
 
     End Sub
