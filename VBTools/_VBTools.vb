@@ -36,14 +36,13 @@ Module _VBTools
     End Sub
 
     Sub testDialogBox()
-        Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2") With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
-
+        'Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2") With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
+        Dim maBox As New DialogBox.ChoiceBox("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2", True) With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
 
         maBox.ShowDialog()
-        Console.WriteLine(maBox.getFichierChoisi)
-        Console.WriteLine(maBox.getFichierChoisi_DepuisCheminRelatif)
-        Console.WriteLine(maBox.getFichierChoisi_NomSeul)
-        Console.WriteLine(maBox.getFichierChoisi_NomSeulSansExtention)
+        Console.WriteLine(maBox.getResultatFull)
+        Console.WriteLine(maBox.getResultatRelatif)
+        Console.WriteLine(maBox.getResultatSimple)
         Console.WriteLine(maBox.getRepertoireBaseAbsolu)
         Console.WriteLine(maBox.getRepertoireBaseRelatif)
 
@@ -62,10 +61,6 @@ Module _VBTools
         Next
 
         monDGV.DataSource = maListe
-
-        Dim monImp As New PrintDataGridView2(monDGV)
-        monImp.Entete_Brush = New System.Drawing.SolidBrush(Drawing.Color.HotPink)
-        monImp.Impression()
 
     End Sub
 
