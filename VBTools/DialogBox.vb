@@ -511,6 +511,7 @@ Namespace DialogBox
             traitementChoixUtilisateur()
         End Sub
         Private Sub TXTFichier_TextChanged() Handles TXT_Fichier.TextChanged
+            Me.TXT_Fichier.Text.Trim()
             traitementChoixUtilisateur()
         End Sub
 #End Region
