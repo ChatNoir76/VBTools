@@ -1,4 +1,11 @@
-﻿27 Mars 19 : 1.1.0.0 [Build 3]
+﻿28 Mars 19 : 1.1.0.1 [Build 4]
+DialogBox:
+	BOXOPENFILE
+		correction bug listeExtention
+	BOXSAVEFILE
+		suppression des espaces du nom de fichier (TXT_Fichier.TextChanged)
+--------------------------------------------------------------------------------------------
+27 Mars 19 : 1.1.0.0 [Build 3]
 DialogBox:
 	CHOICEBOX
 		Réécriture de choiceBox

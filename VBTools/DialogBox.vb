@@ -511,7 +511,7 @@ Namespace DialogBox
             traitementChoixUtilisateur()
         End Sub
         Private Sub TXTFichier_TextChanged() Handles TXT_Fichier.TextChanged
-            Me.TXT_Fichier.Text.Trim()
+            Me.TXT_Fichier.Text = Me.TXT_Fichier.Text.Trim()
             traitementChoixUtilisateur()
         End Sub
 #End Region
@@ -542,11 +542,15 @@ Namespace DialogBox
         ''' <value>doit être conforme à la regex : ^\.[a-zA-Z0-9_]+</value>
         ''' <returns>la liste des extentions</returns>
         ''' <remarks></remarks>
-        Public Property listeExtention As List(Of String)
+        Public Property listeExtention As String()
             Get
-                Return _ListExtAPrendre
+                If IsNothing(_ListExtAPrendre) Then
+                    Return Nothing
+                Else
+                    Return _ListExtAPrendre.ToArray
+                End If
             End Get
-            Set(ByVal value As List(Of String))
+            Set(ByVal value As String())
                 If Not IsNothing(value) Then
                     Dim _ListExtAPrendre As New List(Of String)
                     Dim desc As New System.Text.StringBuilder()
@@ -567,7 +571,7 @@ Namespace DialogBox
                     _ListExtAPrendre = Nothing
                     TXT_CBox.Text = _EXT_ALL_DESCRIPTION
                 End If
-                
+
                 MyBase.RemplissageTreeView(_ListExtAPrendre)
 
             End Set
