@@ -1,4 +1,4 @@
-﻿27 Mars 19 : 1.+1.0.0
+﻿27 Mars 19 : 1.1.0.0 [Build 3]
 DialogBox:
 	CHOICEBOX
 		Réécriture de choiceBox
