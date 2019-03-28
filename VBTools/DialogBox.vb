@@ -20,7 +20,6 @@ Namespace DialogBox
         Private Const ERR_DESCRIPTION = "Ereur lors du formatage de la zone Texte de description"
         Private Const ERR_SHOWDIALOG = "Ereur lors de l'affichage de la boite de dialogue"
         Private Const ERR_CHARGETREEVIEW = "Ereur lors de la récupération des noms de fichier pour remplir la boite de dialogue"
-        'Private Const ERR_LASTMETHODE = "Ereur lors de l'utilisation de la méthode Last()"
 
         'extention autorisé à l'affichage
         Private Const _EXT_ALL = "*.*"
@@ -42,9 +41,14 @@ Namespace DialogBox
         Private _Form_Main_TXT_Description As New TextBox
 
 #Region "Property"
-        Protected WriteOnly Property RepertoireBaseAbsolu As String
+        Protected WriteOnly Property setRepertoireBaseAbsolu As String
             Set(ByVal value As String)
                 _RepertoireBaseAbsolu = value
+            End Set
+        End Property
+        Protected WriteOnly Property setFichierSelectionne As String
+            Set(ByVal value As String)
+                _FichierSelectionne = value
             End Set
         End Property
         Public ReadOnly Property getRepertoireBaseAbsolu As String
@@ -55,6 +59,20 @@ Namespace DialogBox
         Public ReadOnly Property getRepertoireBaseRelatif As String
             Get
                 Return Path.GetFileName(_RepertoireBaseAbsolu)
+            End Get
+        End Property
+        Public ReadOnly Property getRepertoireBeforeBase As String
+            Get
+                Dim frac() = _RepertoireBaseAbsolu.Split(Path.DirectorySeparatorChar)
+                Dim chemin As New System.Text.StringBuilder
+
+                For i = 1 To frac.Count - 1
+                    chemin.Append(frac(i - 1)).Append(Path.DirectorySeparatorChar)
+                Next
+
+                chemin.Remove(chemin.Length - 1, 1)
+
+                Return chemin.ToString
             End Get
         End Property
         ''' <summary>
@@ -176,6 +194,14 @@ Namespace DialogBox
             Get
                 Return _Form_Main_TreeView.Location
             End Get
+        End Property
+        Protected Property MainForm_TXTResultat_Text As String
+            Get
+                Return Me._Form_Main_TXT_Result.Text
+            End Get
+            Set(ByVal value As String)
+                Me._Form_Main_TXT_Result.Text = value
+            End Set
         End Property
 #End Region
 
@@ -319,23 +345,38 @@ Namespace DialogBox
 #End Region
 
 #Region "Evenement"
-        Protected Sub BTCancel_click() Handles _Form_Main_BT_Annuler.Click
+        Private Sub BTCancel_click() Handles _Form_Main_BT_Annuler.Click
             _FichierSelectionne = Nothing
             _Form_Main.Close()
         End Sub
-        Protected Sub BTOK_click() Handles _Form_Main_BT_OK.Click
+        Private Sub BTOK_click() Handles _Form_Main_BT_OK.Click
             _Form_Main.Close()
         End Sub
-        Protected Sub TreeViewSelectionFichier() Handles _Form_Main_TreeView.AfterSelect
+
+        Protected Overridable Sub TreeViewSelectionFichier(ByVal sender As Object, ByVal e As System.Windows.Forms.TreeViewEventArgs) Handles _Form_Main_TreeView.AfterSelect
             Dim selection As New System.Text.StringBuilder
+
             With selection
-                .Append(_RepertoireBaseAbsolu)
+                .Append(getRepertoireBeforeBase)
                 .Append(Path.DirectorySeparatorChar)
                 .Append(_Form_Main_TreeView.SelectedNode.FullPath)
             End With
-            _FichierSelectionne = selection.ToString
-            _Form_Main_TXT_Result.Text = _Form_Main_TreeView.SelectedNode.Text
-            _Form_Main_BT_OK.Enabled = True
+
+            If _VoirFichierDansTreeView Then
+                If File.Exists(selection.ToString) Then
+                    _FichierSelectionne = selection.ToString
+                    _Form_Main_TXT_Result.Text = _Form_Main_TreeView.SelectedNode.Text
+                    _Form_Main_BT_OK.Enabled = True
+                Else
+                    _FichierSelectionne = Nothing
+                    _Form_Main_TXT_Result.Text = String.Empty
+                    _Form_Main_BT_OK.Enabled = False
+                End If
+            Else
+                _FichierSelectionne = selection.ToString
+                _Form_Main_TXT_Result.Text = _Form_Main_TreeView.SelectedNode.Text
+                _Form_Main_BT_OK.Enabled = True
+            End If
         End Sub
 #End Region
     End Class
@@ -346,52 +387,26 @@ Namespace DialogBox
     Public Class BoxSaveFile
         Inherits ChoiceBox
 
+        Private Const ERR_NOMETHODEEXT = "La méthode de gestion de l'extention n'est pas connue"
+        Private Const ERR_NOTEXT = "{0} n'est pas une extention de fichier valable"
+        Private Const ERR_NOMNOTGOOD = "{0} n'est pas un nom de fichier reconnu"
+
+        'si le fichier existe déjà
         Private Const ERR_SAMEFILE = "Le fichier {0} existe déjà!!!"
         Private _TextDescFont As New Font("Arial", 12.0, FontStyle.Italic)
-        Private _TextDescRed As Color = Color.Red
 
+        Private _nomExtention As String
+        Private _nomFichierParDefault As String
+        Private _selectionTreeView As String
+
+        'Element Windows Forms
         Private WithEvents TXT_Fichier As New TextBox
         Private TXT_Ext As New TextBox
-        Private _CompleteLoad As Boolean = False
-        Private _listeNomInterdit As List(Of String)
 
         Enum ext As Integer
-            Remplace = 1
-            Ajoute = 2
-            Autre = 3
+            RemplaceExtention = 1
+            AdditionneExtention = 2
         End Enum
-
-#Region "Property"
-        ''' <summary>
-        ''' Liste de nom de fichier interdit lors de l'enregistrement (nom complet avec extention)
-        ''' </summary>
-        ''' <value>Liste nom de fichier interdit</value>
-        ''' <returns>Liste nom de fichier interdit</returns>
-        ''' <remarks></remarks>
-        Public Property ListeNomInterdit As List(Of String)
-            Get
-                Return _listeNomInterdit
-            End Get
-            Set(ByVal value As List(Of String))
-                _listeNomInterdit = value
-            End Set
-        End Property
-        Private ReadOnly Property DossierComplet As String
-            Get
-                Return Nothing 'AllNotLast(getRepertoireBaseAbsolu, "\") & "\" & _Form_Main_TreeView.SelectedNode.FullPath
-            End Get
-        End Property
-        Private ReadOnly Property NomComplet As String
-            Get
-                Dim NomFichier As New System.Text.StringBuilder
-                With NomFichier
-                    '.Append(_Form_Main_TXT_Result.Text).Append(Path.DirectorySeparatorChar)
-                    .Append(TXT_Fichier.Text.Trim).Append(TXT_Ext.Text)
-                End With
-                Return NomFichier.ToString
-            End Get
-        End Property
-#End Region
 
 #Region "Constructeur"
         ''' <summary>
@@ -400,44 +415,42 @@ Namespace DialogBox
         ''' <param name="RepertoireRacine">Répertoire Racine lors de l'enregistrement</param>
         ''' <param name="NomFichierParDefaut">Fichier avec extension non modifiable</param>
         ''' <remarks></remarks>
-        Sub New(ByVal RepertoireRacine As String, Optional ByVal NomFichierParDefaut As String = Nothing)
-            MyBase.New(RepertoireRacine, False)
-            CtrlConstruction()
-
-            If Not IsNothing(NomFichierParDefaut) Then
-                TXT_Ext.Text = Path.GetExtension(NomFichierParDefaut)
-                TXT_Fichier.Text = Path.GetFileNameWithoutExtension(NomFichierParDefaut)
-            Else
-                TXT_Ext.Visible = False
-                TXT_Fichier.Size = New Size(TXT_Fichier.Size.Width + TXT_Ext.Size.Width + 6, TXT_Fichier.Size.Height)
-            End If
-
-            _CompleteLoad = True
+        Sub New(ByVal RepertoireRacine As String, ByVal NomFichierParDefaut As String)
+            MyClass.New(RepertoireRacine, NomFichierParDefaut, Path.GetExtension(NomFichierParDefaut), ext.RemplaceExtention)
         End Sub
         ''' <summary>
         ''' Sélection d'un dossier pour enregistrement d'un fichier
         ''' </summary>
         ''' <param name="RepertoireRacine">Répertoire Racine lors de l'enregistrement</param>
-        ''' <param name="NomFichierParDefaut">Fichier avec extension</param>
+        ''' <param name="NomFichierAvecExtention">Fichier avec extension</param>
         ''' <param name="Extension">.ext</param>
         ''' <param name="action">remplace l'extension existante (.txt->.ext) ou l'ajoute (.txt->.txt.ext)</param>
         ''' <remarks></remarks>
-        Sub New(ByVal RepertoireRacine As String, ByVal NomFichierParDefaut As String, ByVal Extension As String, ByVal action As ext)
+        Sub New(ByVal RepertoireRacine As String, ByVal NomFichierAvecExtention As String, ByVal Extension As String, ByVal action As ext)
             MyBase.New(RepertoireRacine, False)
-            CtrlConstruction()
-            Select Case action
-                Case 1
-                    TXT_Ext.Text = Extension
-                    TXT_Fichier.Text = Path.GetFileNameWithoutExtension(NomFichierParDefaut)
-                Case 2
-                    TXT_Ext.Text = Path.GetExtension(NomFichierParDefaut) & Extension
-                    TXT_Fichier.Text = Path.GetFileNameWithoutExtension(NomFichierParDefaut)
-                Case Else
-                    TXT_Ext.Text = Extension
-                    TXT_Fichier.Text = NomFichierParDefaut
-            End Select
 
-            _CompleteLoad = True
+            '(note : création classe service avec check regex?)
+            Dim regex As New System.Text.RegularExpressions.Regex("^\.[a-zA-Z0-9_]+")
+            If Not regex.Match(Extension).Success Then
+                Throw New VBToolsException(String.Format(ERR_NOTEXT, Extension))
+            End If
+
+            Dim regex2 As New System.Text.RegularExpressions.Regex("^[a-zA-Z0-9\s\-_éàè\+]+[\.a-zA-Z0-9]+")
+            If Not regex2.Match(NomFichierAvecExtention).Success Then
+                Throw New VBToolsException(String.Format(ERR_NOMNOTGOOD, NomFichierAvecExtention))
+            End If
+
+            If action = ext.RemplaceExtention Then
+                _nomExtention = Extension
+                _nomFichierParDefault = Path.GetFileNameWithoutExtension(NomFichierAvecExtention)
+            ElseIf action = ext.AdditionneExtention Then
+                _nomExtention = Path.GetExtension(NomFichierAvecExtention) & Extension
+                _nomFichierParDefault = Path.GetFileNameWithoutExtension(NomFichierAvecExtention)
+            Else
+                Throw New VBToolsException(ERR_NOMETHODEEXT)
+            End If
+
+            CtrlConstruction()
         End Sub
         Private Sub CtrlConstruction()
             'TREEVIEW
@@ -453,70 +466,52 @@ Namespace DialogBox
                 Setup(TXT_Ext, 40, .Size.Height, .Location.X + .Size.Width + 6, .Location.Y)
                 TXT_Ext.ReadOnly = True
             End With
-                'RemplissageTreeView()
+
+            TXT_Ext.Text = _nomExtention
+            TXT_Fichier.Text = _nomFichierParDefault
 
         End Sub
 #End Region
 
 #Region "Region des controls"
-        Private Sub VerifCanClickOK()
-            If Not _CompleteLoad Then Exit Sub
-            MainForm_BTOK_Enabled = False
-            'If Not TXT_Fichier.Text = vbNullString And Not _Form_Main_TXT_Result.Text = vbNullString And VerifNomFichier() Then
-            If BlackListOK() Then MainForm_BTOK_Enabled = True
-            'End If
+        Private Sub changeTextDescriptionSameFile(ByVal maDescription As String, ByVal monFont As Font, ByVal maCouleur As Color)
+            MyBase.DialogBoxPoliceDescription = monFont
+            MyBase.DialogBoxTexteDescription = maDescription
+            Me.TXT_Fichier.BackColor = maCouleur
         End Sub
-        Private Function VerifNomFichier() As Boolean
-            If File.Exists(NomComplet) Then
-                changeTextDescriptionSameFile(NomComplet)
-                Return False
-            ElseIf File.Exists(NomComplet & ".crp") Then
-                changeTextDescriptionSameFile(NomComplet & ".crp")
-                Return False
-            Else
-                'ReinitialiseTextDescription()
-                Me.TXT_Fichier.BackColor = Color.White
-                Return True
-            End If
-        End Function
-        Private Sub changeTextDescriptionSameFile(ByVal nomFichier As String)
-            'With MyBase._Form_Main_TXT_Description
-            '.Text = String.Format(ERR_SAMEFILE, nomFichier)
-            '.Font = _TextDescFont
-            'End With
-            Me.TXT_Fichier.BackColor = _TextDescRed
-        End Sub
-        Private Function BlackListOK() As Boolean
-            'si la liste est null ou vide, pas de comparaison
-            If IsNothing(_listeNomInterdit) Then Return True
-            If _listeNomInterdit.Count = 0 Then Return True
-
-            'comparaison
-            For Each Nom As String In _listeNomInterdit
-                If DossierComplet & "\" & Nom = NomComplet Then Return False
-            Next
-
-            Return True
-        End Function
-        Protected Sub NextNodeOLD(ByVal Repertoire As String, ByVal NodeActuel As TreeNode)
-            Dim Node As TreeNode = NodeActuel.Nodes(Repertoire)
-            For Each rep As String In Directory.GetDirectories(Repertoire)
-                Node.Nodes.Add(rep, Path.GetFileName(rep))
-                NextNodeOLD(rep, Node)
-            Next
-        End Sub
-        Private Function ComparatifEXT(ByVal GetExt As String, ByVal SplitExt As String) As Boolean
-            Return (Path.GetExtension(GetExt).ToLower Like ("." & SplitExt.Split(".")(SplitExt.Split(".").Count - 1))).ToString.ToLower
-        End Function
 #End Region
 
-#Region "Evènement"
-        'Protected Sub TreeViewSelectionFichierOLD() Handles _Form_Main_TreeView.AfterSelect
-        '_Form_Main_TXT_Result.Text = DossierComplet
-        'VerifCanClickOK()
-        'End Sub
-        Protected Overridable Sub TXTFichier_TextChanged() Handles TXT_Fichier.TextChanged
-            VerifCanClickOK()
+#Region "Evènement choix utilisateur"
+        Private Sub traitementChoixUtilisateur()
+            Dim cheminAbs As New System.Text.StringBuilder
+            Dim nomFichier As String = TXT_Fichier.Text.Trim
+            'détermination du nom absolu du fichier choisi
+            With cheminAbs
+                .Append(getRepertoireBeforeBase)
+                .Append(Path.DirectorySeparatorChar)
+                .Append(_selectionTreeView)
+                .Append(Path.DirectorySeparatorChar)
+                .Append(nomFichier)
+                .Append(_nomExtention)
+            End With
+
+            'si fichier existe
+            If File.Exists(cheminAbs.ToString) Then
+                changeTextDescriptionSameFile(String.Format(ERR_SAMEFILE, cheminAbs.ToString), _TextDescFont, Color.Red)
+                MyBase.MainForm_BTOK_Enabled = False
+            Else
+                changeTextDescriptionSameFile(MyBase.getDescriptionOrigineTexte, MyBase.getDescriptionOrigineFont, Color.White)
+                MyBase.setFichierSelectionne = cheminAbs.ToString
+                MyBase.MainForm_BTOK_Enabled = True
+            End If
+        End Sub
+        Protected Overrides Sub TreeViewSelectionFichier(ByVal sender As Object, ByVal e As System.Windows.Forms.TreeViewEventArgs)
+            _selectionTreeView = e.Node.FullPath
+            MainForm_TXTResultat_Text = _selectionTreeView
+            traitementChoixUtilisateur()
+        End Sub
+        Private Sub TXTFichier_TextChanged() Handles TXT_Fichier.TextChanged
+            traitementChoixUtilisateur()
         End Sub
 #End Region
 
@@ -528,6 +523,7 @@ Namespace DialogBox
     Public Class BoxOpenFile
         Inherits ChoiceBox
         Private Const _EXT_ALL_DESCRIPTION = "Tous (*.*)"
+        Private Const _EXT_SPECIF_DESCRIPTION = "Type ({0})"
         Private Const _ERR_INITIALISATION = "Erreur pendant l'ouverture de l'objet BoxOpenFile"
 
         'élément Windows form ajoutés
@@ -550,15 +546,29 @@ Namespace DialogBox
                 Return _ListExtAPrendre
             End Get
             Set(ByVal value As List(Of String))
-                Dim _ListExtAPrendre As New List(Of String)
-                For Each ext As String In value
-                    Dim regex As New System.Text.RegularExpressions.Regex("^\.[a-zA-Z0-9_]+")
-                    If regex.Match(ext).Success Then
-                        _ListExtAPrendre.Add(ext.ToLower)
-                    End If
-                Next
+                If Not IsNothing(value) Then
+                    Dim _ListExtAPrendre As New List(Of String)
+                    Dim desc As New System.Text.StringBuilder()
 
+                    For Each ext As String In value
+                        Dim regex As New System.Text.RegularExpressions.Regex("^\.[a-zA-Z0-9_]+")
+                        If regex.Match(ext).Success Then
+                            _ListExtAPrendre.Add(ext.ToLower)
+                            desc.Append(ext.ToLower).Append("|")
+                        End If
+                    Next
+
+                    'retire le dernier caractère
+                    desc.Remove(desc.Length - 1, 1)
+
+                    TXT_CBox.Text = String.Format(_EXT_SPECIF_DESCRIPTION, desc.ToString)
+                Else
+                    _ListExtAPrendre = Nothing
+                    TXT_CBox.Text = _EXT_ALL_DESCRIPTION
+                End If
+                
                 MyBase.RemplissageTreeView(_ListExtAPrendre)
+
             End Set
         End Property
 #End Region
@@ -570,14 +580,9 @@ Namespace DialogBox
                 'TEXTBOX
                 MainForm_TXTResultat_Size = New Size(MainForm_TXTResultat_Size.Width - 177, MainForm_TXTResultat_Size.Height)
 
-                'COMBOBOX
-                Setup(CB, 171, 23, 325, 440)
-                CB.DropDownStyle = ComboBoxStyle.DropDownList
-                Setup(TXT_CBox, 0, 0, 0, 0)
+                Setup(TXT_CBox, 171, 23, 325, 440)
                 With TXT_CBox
                     .Enabled = False
-                    .Location = CB.Location
-                    .Size = CB.Size
                     .Text = _EXT_ALL_DESCRIPTION
                     .BringToFront()
                 End With
@@ -589,58 +594,5 @@ Namespace DialogBox
             End Try
         End Sub
 #End Region
-
-#Region "Region des controls"
-        Private Function ComparatifEXT(ByVal GetExt As String, ByVal SplitExt As String) As Boolean
-            Return (Path.GetExtension(GetExt).ToLower Like ("." & SplitExt.Split(".")(SplitExt.Split(".").Count - 1))).ToString.ToLower
-        End Function
-#End Region
-
-#Region "Choix Externe"
-        ''' <summary>
-        ''' Choix des extensions des fichiers recherchés
-        ''' </summary>
-        ''' <param name="Ext">exemple : Office Documents |*.doc;*.docx;*.dotx;*.dotm</param>
-        ''' <remarks></remarks>
-        Public Sub ChoixExtension(ByVal ParamArray Ext() As String)
-            Dim nb As Integer
-            For Each element As String In Ext
-                nb += 1
-                CB.Items.Add(element.Split("|")(0))
-                _Ext.Add(element.Split("|")(1))
-            Next
-            If nb > 0 Then TriExt(0)
-        End Sub
-        Private Sub TriExt(ByVal Index As Integer) 'index correspondant à celui de la combobox et de la liste _EXT
-            'on efface la liste
-            _ListExtAPrendre.Clear()
-
-            TXT_CBox.Text = CB.Items(Index)
-
-            For Each element In _Ext(Index).Split(";")
-                _ListExtAPrendre.Add(element)
-            Next
-
-            'Call RemplissageTreeView()
-        End Sub
-#End Region
-
-#Region "Evenement"
-        Private Sub CB_SelectedIndexChanged() Handles CB.SelectedIndexChanged
-            TriExt(CB.Items.IndexOf(CB.SelectedItem))
-        End Sub
-        Private Sub Selection()
-            'MyBase.resultat
-            '_FileName.Clear()
-            'With _Form_Main_TreeView.SelectedNode
-            '_FileName.Add(Last(.Text, ".")) 'nom extension
-            '_FileName.Add(AllNotLast(.Text, ".")) 'nom fichier sans ext
-            '_FileName.Add(.Text) 'nom fichier
-            '_FileName.Add(.FullPath) 'nom fichier dans treeview
-            '_FileName.Add(AllNotLast(getRepertoireBaseAbsolu, "\") & "\" & .FullPath) 'nom fichier dans system
-            'End With
-        End Sub
-#End Region
-
     End Class
 End Namespace

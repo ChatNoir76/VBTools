@@ -3,7 +3,9 @@ DialogBox:
 	CHOICEBOX
 		Réécriture de choiceBox
 	BOXOPENFILE
-		.
+		Ajout choix extention à afficher
+	BOXSAVEFILE
+		refonte du système avec extention de fichier
 
 --------------------------------------------------------------------------------------------
 20 Mars 19 : 1.0.1.0 [Build 2]
