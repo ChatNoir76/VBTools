@@ -37,7 +37,10 @@ Module _VBTools
 
     Sub testDialogBox()
         'Dim maBox As New DialogBox.BoxSaveFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2") With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
-        Dim maBox As New DialogBox.ChoiceBox("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2", True) With {.DialogBoxTexteDescription = "Ceci est le texte à définir"}
+        Dim maBox As New DialogBox.BoxOpenFile("N:\API\DOMAINE DE TRAVAIL R&D\Personnel\Julien\Interface ModeOp2") With {.DialogBoxTexteDescription = "Ceci est le texte à définir",
+                                                                                                                         .listeExtention = {".pDf", ".DOC"}.ToList}
+
+        maBox.listeExtention = {".pdf", ".dot"}.ToList
 
         maBox.ShowDialog()
         Console.WriteLine(maBox.getResultatFull)

@@ -1,6 +1,9 @@
 ﻿27 Mars 19 : 1.+1.0.0
 DialogBox:
-	Réécriture de choiceBox
+	CHOICEBOX
+		Réécriture de choiceBox
+	BOXOPENFILE
+		.
 
 --------------------------------------------------------------------------------------------
 20 Mars 19 : 1.0.1.0 [Build 2]

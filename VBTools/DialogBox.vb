@@ -26,7 +26,7 @@ Namespace DialogBox
         Private Const _EXT_ALL = "*.*"
 
         Private _RepertoireBaseAbsolu As String
-        Private _FichierSelectionne As String
+        Private _FichierSelectionne As String = Nothing
         Private _VoirFichierDansTreeView As Boolean
 
         Private _TextDescription As String = Nothing
@@ -536,15 +536,37 @@ Namespace DialogBox
 
         Protected Friend _Close As Boolean = False
         Private _Ext As New List(Of String)
-        Private _ListExtAPrendre As New List(Of String)
+        Private _ListExtAPrendre As List(Of String) = Nothing
+
+#Region "property"
+        ''' <summary>
+        ''' Liste d'extention de fichier à afficher de la forme (.ext)
+        ''' </summary>
+        ''' <value>doit être conforme à la regex : ^\.[a-zA-Z0-9_]+</value>
+        ''' <returns>la liste des extentions</returns>
+        ''' <remarks></remarks>
+        Public Property listeExtention As List(Of String)
+            Get
+                Return _ListExtAPrendre
+            End Get
+            Set(ByVal value As List(Of String))
+                Dim _ListExtAPrendre As New List(Of String)
+                For Each ext As String In value
+                    Dim regex As New System.Text.RegularExpressions.Regex("^\.[a-zA-Z0-9_]+")
+                    If regex.Match(ext).Success Then
+                        _ListExtAPrendre.Add(ext.ToLower)
+                    End If
+                Next
+
+                MyBase.RemplissageTreeView(_ListExtAPrendre)
+            End Set
+        End Property
+#End Region
 
 #Region "Constructeur"
         Sub New(ByVal RepertoireRacine As String)
             MyBase.New(RepertoireRacine, True)
             Try
-                'ajout des extentions par défaut
-                _ListExtAPrendre.Add(".pdf")
-
                 'TEXTBOX
                 MainForm_TXTResultat_Size = New Size(MainForm_TXTResultat_Size.Width - 177, MainForm_TXTResultat_Size.Height)
 
