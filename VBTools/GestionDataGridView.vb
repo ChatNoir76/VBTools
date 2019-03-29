@@ -27,9 +27,9 @@ Namespace GestionDataGridView
         Private _Ratio As Single
         Private _Xb, _Yb As Integer
         Private _NextPage As Boolean
+        Private _Mode, _Style As Integer
 
 #Region "Configuration des paramètres"
-        Private _Mode, _Style As Integer
         Public Enum Affichage As Integer
             Defaut = 0
             Selection = 1
