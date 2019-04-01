@@ -1,4 +1,4 @@
-﻿28 Mars 19 : x.+1.0.0
+﻿28 Mars 19 : 1.2.0.0 [Build 6]
 GestionDataGridView: (compatibilité NON préservée)
 	Correction Bug encadrement de l'entete
 	Correction Bug colonne non visible à ne pas afficher
