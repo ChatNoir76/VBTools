@@ -249,21 +249,22 @@ Namespace GestionDataGridView
             End If
 
             For i = 1 To _DataGV.ColumnCount
+                If _DataGV.Columns(i - 1).Visible = True Then
+                    'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
+                    Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
 
-                'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
-                Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
+                    'on prepare le format de la cellule
+                    monRectangle = New Rectangle(Xcursor, _Ycursor, Xcol, _CorpsTexte_Font.GetHeight() * coeffLigne * 1.05)
+                    'le texte de la cellule
+                    monTexte = _DataGV.Rows(ligneDataGridView).Cells(i - 1).Value
 
-                'on prepare le format de la cellule
-                monRectangle = New Rectangle(Xcursor, _Ycursor, Xcol, _CorpsTexte_Font.GetHeight() * coeffLigne * 1.05)
-                'le texte de la cellule
-                monTexte = _DataGV.Rows(ligneDataGridView).Cells(i - 1).Value
-
-                'on complète l'intérieur
-                e.Graphics.DrawString(monTexte, _CorpsTexte_Font, _CorpsTexte_Brush, monRectangle, _CorpsTexte_StringFormat)
-                'on dessine le contour de la cellule
-                e.Graphics.DrawRectangle(_CorpsTexte_Stylo, Rectangle.Round(monRectangle))
-                'prochaine coordonnée d'écriture
-                Xcursor += Xcol
+                    'on complète l'intérieur
+                    e.Graphics.DrawString(monTexte, _CorpsTexte_Font, _CorpsTexte_Brush, monRectangle, _CorpsTexte_StringFormat)
+                    'on dessine le contour de la cellule
+                    e.Graphics.DrawRectangle(_CorpsTexte_Stylo, Rectangle.Round(monRectangle))
+                    'prochaine coordonnée d'écriture
+                    Xcursor += Xcol
+                End If
             Next
 
             'on déplace le curseur
@@ -281,18 +282,20 @@ Namespace GestionDataGridView
             Dim coeffLigne As Integer = determineLignes()
 
             For i = 1 To _DataGV.ColumnCount
-                'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
-                Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
-                'on prepare le format de la cellule
-                monRectangle = New RectangleF(Xcursor, _Ycursor, Xcol, _Entete_Font.GetHeight() * coeffLigne * 1.05)
-                'le texte de la cellule
-                monTexte = _DataGV.Columns(i - 1).HeaderText
-                'on dessine le contour de la cellule
-                e.Graphics.DrawRectangle(_Entete_Stylo, Xcursor, _Ycursor, Xcol, _Entete_Font.GetHeight())
-                'on complète l'intérieur
-                e.Graphics.DrawString(monTexte, _Entete_Font, _Entete_Brush, monRectangle, _Entete_StringFormat)
-                'prochaine coordonnée d'écriture
-                Xcursor += Xcol
+                If _DataGV.Columns(i - 1).Visible = True Then
+                    'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
+                    Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
+                    'on prepare le format de la cellule
+                    monRectangle = New RectangleF(Xcursor, _Ycursor, Xcol, _Entete_Font.GetHeight() * coeffLigne * 1.05)
+                    'le texte de la cellule
+                    monTexte = _DataGV.Columns(i - 1).HeaderText
+                    'on dessine le contour de la cellule
+                    e.Graphics.DrawRectangle(_Entete_Stylo, Rectangle.Round(monRectangle))
+                    'on complète l'intérieur
+                    e.Graphics.DrawString(monTexte, _Entete_Font, _Entete_Brush, monRectangle, _Entete_StringFormat)
+                    'prochaine coordonnée d'écriture
+                    Xcursor += Xcol
+                End If
             Next
 
             'on déplace le curseur
