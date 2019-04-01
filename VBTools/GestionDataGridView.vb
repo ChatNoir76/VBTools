@@ -4,203 +4,299 @@ Imports System.Drawing.Printing
 
 Namespace GestionDataGridView
     Public Class PrintDataGridView
+        Private Const ERR_IMPRESSION = "erreur lors du processus d'impression"
+        Private Const ERR_NODATA = "Le dataGridView est vides, il ne contient aucune donnée (pour le rendre visible vous devez l'ajouter à un control Form selon la méthode [monForm.Controls.Add(monDGV)])"
+
         'Donnée à imprimer
         Private WithEvents _PrintDoc As New PrintDocument
         Private _DataGV As DataGridView
 
-        'Paramètres d'affichages
-        Private _Texte As [String]
-        Private _Font_CorpsTexte, _Font_Entete As Font
-        Private _Brush1 As SolidBrush
-        Private _Height, _Height_Entete As Single
-        Private _drawRect As RectangleF
-        Private _drawFormat As StringFormat
-        Private _Stylo_CorpsTexte, _Stylo_Entete As Pen
+        'Paramètres d'affichages ENTETE
+        Private _Entete_Font As Font = New Font("Arial", 20, FontStyle.Bold)
+        Private _Entete_Stylo As Pen = New Pen(Color.Black)
+        Private _Entete_Brush As SolidBrush = New SolidBrush(Color.Black)
+        Private _Entete_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Center,
+                                                                              .LineAlignment = StringAlignment.Center}
+        'Paramètres d'affichages CORPS DU DOCUMENT
+        Private _CorpsTexte_Font As Font = New Font("Arial", 15, FontStyle.Italic)
+        Private _CorpsTexte_Stylo As Pen = New Pen(Color.Black)
+        Private _CorpsTexte_Brush As SolidBrush = New SolidBrush(Color.Black)
+        Private _CorpsTexte_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Center}
 
-        'Paramètres d'impression
-        Private _NumLigne As Integer
+        'Paramètres d'affichages Ligne individuelle
+        Private _LigneIndiv_Font As Font = New Font("Arial", 15, FontStyle.Italic)
+        Private _LigneIndiv_Stylo As Pen = New Pen(Color.White)
+        Private _LigneIndiv_Brush As SolidBrush = New SolidBrush(Color.Black)
+        Private _LigneIndiv_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Near}
+        Private _LigneIndiv_Text As String = Nothing
+
+        'Coordonnées de la zone d'impression
+        Private _Xbegin, _Ybegin, _Xend, _Yend As Integer
+        Private _LigneEnCours As Integer = 1
+
+        'Détermine la position d'écriture de la nouvelle ligne
+        Private _Ycursor As Integer
+
+        'nombre de page imprimées
         Private _nbPage As Integer = 0
-        Private _nbColonne As Integer
-        Private _width As List(Of Single)
-        Private _Xbegin, _Ybegin, _Xend, _Yend, _Xpage As Integer
-        Private _XPrint As Single = 0
-        Private _Ratio As Single
-        Private _Xb, _Yb As Integer
+
+        'Détermine si une nouvelle page est nécessaire pour finir l'impression
         Private _NextPage As Boolean
-        Private _Mode, _Style As Integer
 
-#Region "Configuration des paramètres"
-        Public Enum Affichage As Integer
-            Defaut = 0
-            Selection = 1
-        End Enum
-        Public Enum Style As Integer
-            Grille = 0
-        End Enum
-        Private Sub Parametre()
-            Select Case _Mode
-                Case 0
-                    'corps du doc
-                    _Font_CorpsTexte = New Font("Arial", 12, FontStyle.Italic)
-                    _Stylo_CorpsTexte = New Pen(Color.Black)
-
-                    'Entete
-                    _Font_Entete = New Font("Arial", 16, FontStyle.Bold)
-                    _Stylo_Entete = New Pen(Color.Black)
-                    _Height_Entete = 50
-
-                    'Commun
-                    _Brush1 = New SolidBrush(Color.Black)
-                    _drawFormat = New StringFormat With {.Alignment = StringAlignment.Center}
-            End Select
-        End Sub
+#Region "Property"
+        Public Property textePremierePage As String
+            Get
+                Return _LigneIndiv_Text
+            End Get
+            Set(ByVal value As String)
+                _LigneIndiv_Text = value
+            End Set
+        End Property
+        Public Property Font_Entete As Font
+            Get
+                Return _Entete_Font
+            End Get
+            Set(ByVal value As Font)
+                _Entete_Font = value
+            End Set
+        End Property
+        Public Property Font_CorpsTexte As Font
+            Get
+                Return _CorpsTexte_Font
+            End Get
+            Set(ByVal value As Font)
+                _CorpsTexte_Font = value
+            End Set
+        End Property
+        Public Property Font_LigneIndiv As Font
+            Get
+                Return _LigneIndiv_Font
+            End Get
+            Set(ByVal value As Font)
+                _LigneIndiv_Font = value
+            End Set
+        End Property
+        Public Property CouleurEncadrement_Entete As Pen
+            Get
+                Return _Entete_Stylo
+            End Get
+            Set(ByVal value As Pen)
+                _Entete_Stylo = value
+            End Set
+        End Property
+        Public Property CouleurEncadrement_CorpsTexte As Pen
+            Get
+                Return _CorpsTexte_Stylo
+            End Get
+            Set(ByVal value As Pen)
+                _CorpsTexte_Stylo = value
+            End Set
+        End Property
+        Public Property CouleurEncadrement_LigneIndiv As Pen
+            Get
+                Return _LigneIndiv_Stylo
+            End Get
+            Set(ByVal value As Pen)
+                _LigneIndiv_Stylo = value
+            End Set
+        End Property
+        Public Property CouleurTexte_Entete As SolidBrush
+            Get
+                Return _Entete_Brush
+            End Get
+            Set(ByVal value As SolidBrush)
+                _Entete_Brush = value
+            End Set
+        End Property
+        Public Property CouleurTexte_CorpsTexte As SolidBrush
+            Get
+                Return _CorpsTexte_Brush
+            End Get
+            Set(ByVal value As SolidBrush)
+                _CorpsTexte_Brush = value
+            End Set
+        End Property
+        Public Property CouleurTexte_LigneIndiv As SolidBrush
+            Get
+                Return _LigneIndiv_Brush
+            End Get
+            Set(ByVal value As SolidBrush)
+                _LigneIndiv_Brush = value
+            End Set
+        End Property
 #End Region
 
 #Region "Constructeur"
         Sub New(ByRef MyDataGridView As DataGridView)
+            If MyDataGridView.Rows.Count = 0 Then
+                Throw New VBToolsException(ERR_NODATA)
+            End If
             _DataGV = MyDataGridView
         End Sub
 #End Region
 
 #Region "Procèdure externe"
-        Public Overloads Sub Impression(Optional ByVal Aff As Affichage = Affichage.Defaut, Optional ByVal MonStyle As Style = Style.Grille)
-            _Mode = MonStyle
-            _Style = Aff
-            Parametre()
-            PreparePrinting()
-
-            Dim P As New PrintPreviewDialog
-            _PrintDoc.DefaultPageSettings.Landscape = True
-            _PrintDoc.DefaultPageSettings.Margins = New Margins(Conv(10), Conv(10), Conv(10), Conv(10))
-            P.Document = _PrintDoc
-            P.ShowDialog()
+        Public Overloads Sub Impression()
+            Try
+                Dim P As New PrintPreviewDialog
+                _PrintDoc.DefaultPageSettings.Landscape = True
+                _PrintDoc.DefaultPageSettings.Margins = New Margins(Conv(10), Conv(10), Conv(10), Conv(10))
+                P.Document = _PrintDoc
+                P.ShowDialog()
+            Catch ex As Exception
+                Throw New VBToolsException(ERR_IMPRESSION, ex)
+            End Try
         End Sub
 #End Region
 
 #Region "Processus d'impression"
-        Private Sub PreparePrinting()
-            'nb de colonne par ligne à imprimer
-            _nbColonne = _DataGV.ColumnCount
-            'Numéro de la 1ere ligne imprimée
-            _NumLigne = 0
-            'détermination de la longueur totale a imprimer (hors entete)
-            For Each row As DataGridViewRow In _DataGV.Rows
-                _XPrint += row.Height
-            Next
+        Private Sub DeterminationParametreImpression(ByRef e As System.Drawing.Printing.PrintPageEventArgs)
+            'Détermination point (0,0)
+            _Xbegin = e.MarginBounds.Left
+            _Ybegin = e.MarginBounds.Top
+            'Détermination point (Max,Max)
+            _Xend = e.MarginBounds.Right
+            _Yend = e.MarginBounds.Bottom
         End Sub
-        Private Sub BuildPageToPrint(ByVal sender As System.Object, ByVal e As System.Drawing.Printing.PrintPageEventArgs) Handles _PrintDoc.PrintPage
+
+        ''' <summary>
+        ''' Se déclenche pour chaques pages
+        ''' </summary>
+        Private Sub ConstructionImpressionPages(ByVal sender As System.Object, ByVal e As System.Drawing.Printing.PrintPageEventArgs) Handles _PrintDoc.PrintPage
+            '--------------------------------
+            '-  initialisation du document  -
+            '--------------------------------
             If _nbPage = 0 Then
-                'Détermination point(0,0)
-                _Xbegin = e.MarginBounds.Left
-                _Ybegin = e.MarginBounds.Top
-                'Détermination point (Max,0)
-                _Xend = e.MarginBounds.Bottom
-                _Yend = e.MarginBounds.Right
-                'Détermination du Width en fonction de l'entete
-                _Ratio = RatioCol(e.MarginBounds.Width)
-                _width = DetermineWidth()
+                'détermination de la zone imprimable
+                DeterminationParametreImpression(e)
             End If
 
-            'Réinitialisation Paramètres
+            '-------------------------------
+            '-  Initialisation de la page  -
+            '-------------------------------
+            'on commence en haut du document
+            _Ycursor = _Ybegin
             _NextPage = False
-            _Xb = 0
-            _Yb = 0
-            '_Yb = 40
-            _Xpage = _Xend
 
-            'application du style d'impression 
-            Call PrintStyle(e)
+
+            '--------------------------
+            '-  Ecriture ligne indiv  -
+            '--------------------------
+            If _nbPage = 0 Then
+                If Not IsNothing(_LigneIndiv_Text) Then
+                    WriteLine(e, _LigneIndiv_Text)
+                End If
+            End If
+
+
+            '--------------------------
+            '-  Ecriture de l'entete  -
+            '--------------------------
+            WriteDataGridViewHeader(e)
+
+
+            '-------------------------------
+            '-  Ecriture du Corps de page  -
+            '-------------------------------
+            For i = _LigneEnCours To _DataGV.Rows.Count
+                WriteDataGridViewRow(e, i - 1)
+                If _NextPage Then
+                    Exit For
+                End If
+            Next
 
             'Détermination du nombre de ligne à imprimer pour cette page
-            If _NextPage = False Then
-                e.HasMorePages = False
-                Call PreparePrinting()
-            Else
-                e.HasMorePages = True
-            End If
+            e.HasMorePages = _NextPage
+
+            'fin de la page et incrémentation
             _nbPage += 1
         End Sub
-#End Region
 
-#Region "Style impression"
-        'Imprime en fonction de la variable _style
-        Private Sub PrintStyle(ByVal e As System.Drawing.Printing.PrintPageEventArgs)
-            Dim StartPage As Boolean = True
-            Do
-                'coordonnée dynamique des rectangles sur l'axe X
-                _Xb = _Xbegin
+        ''' <summary>
+        ''' Ecriture d'une ligne
+        ''' </summary>
+        Private Sub WriteLine(ByRef e As System.Drawing.Printing.PrintPageEventArgs, ByVal Texte As String)
+            Dim monRectangle As Rectangle
+            Dim coeffLigne As Integer = determineLignes(Texte)
 
+            'on prepare le format de la cellule
+            monRectangle = New Rectangle(_Xbegin, _Ycursor, _Xend - _Xbegin, _LigneIndiv_Font.GetHeight() * coeffLigne * 1.05)
 
-                'condition GÉNÉRALE d'arret d'impression
-                On Error GoTo stoping
-                'si ligne non visible, on passe
-                If _DataGV.Rows(_NumLigne).Visible = False Then
-                    _NumLigne += 1
-                    Continue Do
-                End If
-                'condition STYLE1 d'arret d'impression
-                If _Style = 1 Then
-                    'si ligne non sélectionnée, on passe
-                    If _DataGV.Rows(_NumLigne).Selected = False Then
-                        _NumLigne += 1
-                        Continue Do
-                    End If
-                End If
-                On Error Resume Next
+            'on complète l'intérieur
+            e.Graphics.DrawString(Texte, _LigneIndiv_Font, _LigneIndiv_Brush, monRectangle, _LigneIndiv_StringFormat)
+            'on dessine le contour de la cellule
+            e.Graphics.DrawRectangle(_LigneIndiv_Stylo, Rectangle.Round(monRectangle))
 
+            'on déplace le curseur
+            _Ycursor += _LigneIndiv_Font.GetHeight() * coeffLigne * 1.05
+        End Sub
 
-                'impression d'un ligne, boucle sur toutes les colonnes
-                For i = 1 To _nbColonne
-                    'si colonne non visible, on passe
-                    If _DataGV.Columns(i - 1).Visible = False Then Continue For
+        ''' <summary>
+        ''' Ecriture d'une ligne du DataGridView
+        ''' </summary>
+        Private Sub WriteDataGridViewRow(ByRef e As System.Drawing.Printing.PrintPageEventArgs, ByVal ligneDataGridView As Integer)
+            Dim monRectangle As Rectangle
+            Dim monTexte As String
+            Dim Xcursor As Single = _Xbegin
+            Dim Xcol As Single = 0
+            Dim coeffLigne As Integer = determineLignes(ligneDataGridView)
 
-                    If StartPage Then
-                        'e.Graphics.DrawString("ceci est une phrase simple d'entete", _Font_Entete, _Brush1, New PointF(_Xbegin, 0))
-                        'imprime l'Entete lors de chaque nouvelle page
-                        _drawRect = New RectangleF(_Xb, _Yb, _width(i - 1), _Height_Entete)
-                        _Texte = _DataGV.Columns(i - 1).HeaderText
-                        e.Graphics.DrawRectangle(_Stylo_Entete, _Xb, _Yb, _width(i - 1), _Height_Entete)
-                        e.Graphics.DrawString(_Texte, _Font_Entete, _Brush1, _drawRect, _drawFormat)
-                    Else
-                        'on calcule la hauteur de la future ligne
-                        _Height = DetermineHeight(e, _DataGV.Rows(_NumLigne), _Font_CorpsTexte, _drawFormat)
-                        'on détermine s'il reste de la place sur la feuille en fonction de height
-                        If _Xpage - _Height < 0 Then
-                            _XPrint -= _Xpage
-                            If _XPrint > 1 Then _NextPage = True Else _NextPage = False
-                            Exit Do
-                        End If
-                        'si place pour la future ligne, on imprime
-                        _drawRect = New RectangleF(_Xb, _Yb, _width(i - 1), _Height)
-                        'si cellule vide, on affiche rien
-                        If IsDBNull(_DataGV.Rows(_NumLigne).Cells(i - 1).Value) Then
-                            _Texte = Nothing
-                        Else
-                            _Texte = _DataGV.Rows(_NumLigne).Cells(i - 1).Value
-                        End If
-                        e.Graphics.DrawRectangle(_Stylo_CorpsTexte, _Xb, _Yb, _width(i - 1), _Height)
-                        e.Graphics.DrawString(_Texte, _Font_CorpsTexte, _Brush1, _drawRect, _drawFormat)
-                    End If
-                    'coordonnée prochaine colonne de cette ligne
-                    _Xb += _width(i - 1)
-                Next
+            'si ligne à écrire sort de la zone d'impression
+            If _Ycursor + (_CorpsTexte_Font.GetHeight() * coeffLigne) > _Yend Then
+                _LigneEnCours = ligneDataGridView
+                _NextPage = True
+                Exit Sub
+            End If
 
-                'déduction de la place prise par la dernière ligne
-                If StartPage Then
-                    _Xpage += -_Height_Entete
-                    _Yb += _Height_Entete
-                Else
-                    _Xpage += -_Height
-                    _NumLigne += 1
-                    _Yb += _Height
-                End If
+            For i = 1 To _DataGV.ColumnCount
 
-                StartPage = False
-            Loop
-            Exit Sub
-stoping:
-            Err.Clear()
-            _NextPage = False
+                'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
+                Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
+
+                'on prepare le format de la cellule
+                monRectangle = New Rectangle(Xcursor, _Ycursor, Xcol, _CorpsTexte_Font.GetHeight() * coeffLigne * 1.05)
+                'le texte de la cellule
+                monTexte = _DataGV.Rows(ligneDataGridView).Cells(i - 1).Value
+
+                'on complète l'intérieur
+                e.Graphics.DrawString(monTexte, _CorpsTexte_Font, _CorpsTexte_Brush, monRectangle, _CorpsTexte_StringFormat)
+                'on dessine le contour de la cellule
+                e.Graphics.DrawRectangle(_CorpsTexte_Stylo, Rectangle.Round(monRectangle))
+                'prochaine coordonnée d'écriture
+                Xcursor += Xcol
+            Next
+
+            'on déplace le curseur
+            _Ycursor += _CorpsTexte_Font.GetHeight() * coeffLigne * 1.05
+        End Sub
+
+        ''' <summary>
+        ''' Ecriture de l'entete du DataGridView
+        ''' </summary>
+        Private Sub WriteDataGridViewHeader(ByRef e As System.Drawing.Printing.PrintPageEventArgs)
+            Dim monRectangle As RectangleF
+            Dim monTexte As String
+            Dim Xcursor As Single = _Xbegin
+            Dim Xcol As Single = 0
+            Dim coeffLigne As Integer = determineLignes()
+
+            For i = 1 To _DataGV.ColumnCount
+                'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
+                Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
+                'on prepare le format de la cellule
+                monRectangle = New RectangleF(Xcursor, _Ycursor, Xcol, _Entete_Font.GetHeight() * coeffLigne * 1.05)
+                'le texte de la cellule
+                monTexte = _DataGV.Columns(i - 1).HeaderText
+                'on dessine le contour de la cellule
+                e.Graphics.DrawRectangle(_Entete_Stylo, Xcursor, _Ycursor, Xcol, _Entete_Font.GetHeight())
+                'on complète l'intérieur
+                e.Graphics.DrawString(monTexte, _Entete_Font, _Entete_Brush, monRectangle, _Entete_StringFormat)
+                'prochaine coordonnée d'écriture
+                Xcursor += Xcol
+            Next
+
+            'on déplace le curseur
+            _Ycursor += _Entete_Font.GetHeight() * coeffLigne * 1.05
         End Sub
 #End Region
 
@@ -208,7 +304,7 @@ stoping:
         Private Function Conv(ByVal Millimetre As Integer) As Integer
             Return CInt(PrinterUnitConvert.Convert(Millimetre * 10.0R, PrinterUnit.TenthsOfAMillimeter, PrinterUnit.Display))
         End Function
-        Private Function LongCol() As Single
+        Private Function XTotalDataGridView() As Single
             Dim L As Single
             For i = 1 To _DataGV.ColumnCount
                 If _DataGV.Columns(i - 1).Visible Then
@@ -217,27 +313,56 @@ stoping:
             Next
             Return L
         End Function
-        Private Function RatioCol(ByVal LongPage As Single) As Single
-            Return LongPage / LongCol()
+        ''' <summary>
+        ''' Retourne le nombre de caractère max affichable par une ligne
+        ''' </summary>
+        ''' <returns>le nombre de caractère max</returns>
+        ''' <remarks>
+        ''' formule déterminé par excel : 
+        ''' nbChar = 549.16 * police^-1.039
+        ''' r² = 0.9996
+        ''' pour une longueur de colonne de 364
+        ''' police 40 --> 12 chars
+        ''' police 20 --> 24 chars
+        ''' police 10 --> 51 chars
+        ''' police 8 --> 63 chars
+        ''' </remarks>
+        Private Function nbCharMaxParLigne(ByVal police As Single, ByVal tailleColonne As Single) As Integer
+            Dim nbCar As Single = Math.Pow(police, -1.039) * 549.16
+            Return tailleColonne * nbCar / 364
         End Function
-        Private Function DetermineHeight(ByVal e As System.Drawing.Printing.PrintPageEventArgs, ByVal Maligne As DataGridViewRow, ByVal Police As Font, ByVal Format As StringFormat) As Single
-            Dim H As SizeF
-            Dim Hmin As Single = 0
-            For Each Cell As DataGridViewCell In Maligne.Cells
-                If IsDBNull(Cell.Value) Then Continue For
-                If _DataGV.Columns(Cell.ColumnIndex).Visible = False Then Continue For
-                H = e.Graphics.MeasureString(Cell.Value, Police, _width(Cell.ColumnIndex), Format)
-                If H.Height > Hmin Then Hmin = H.Height
+        ''' <summary>
+        ''' Retourne le nombre de lignes nécessaires à l'affichage
+        ''' </summary>
+        ''' <param name="numeroLigneDGV">numéro de ligne du DGV (-1 pour l'entete)</param>
+        ''' <returns>nombre de ligne affichée</returns>
+        ''' <remarks></remarks>
+        Private Function determineLignes(Optional ByVal numeroLigneDGV As Integer = -1)
+            Dim coeffMultiplicateur As Integer = 1
+            Dim Xcol As Single = 0
+
+
+            For i = 1 To _DataGV.ColumnCount
+                Dim coeff As Integer
+                Dim texte As String
+
+                Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
+
+                If numeroLigneDGV = -1 Then
+                    texte = _DataGV.Columns(i - 1).HeaderText
+                    coeff = (texte.Length / nbCharMaxParLigne(_Entete_Font.Size, Xcol)) + 1
+                Else
+                    texte = _DataGV.Rows(numeroLigneDGV).Cells(i - 1).Value
+                    coeff = (texte.Length / nbCharMaxParLigne(_CorpsTexte_Font.Size, Xcol)) + 1
+                End If
+
+                If coeff > coeffMultiplicateur Then coeffMultiplicateur = coeff
             Next
-            Return Hmin
+
+            Return coeffMultiplicateur
         End Function
-        Private Function DetermineWidth() As List(Of Single)
-            'détermine la largeur de la 1ere ligne du datagridview
-            Dim L As New List(Of Single)
-            For i = 0 To _DataGV.ColumnCount - 1
-                L.Add(_DataGV.Columns(i).Width * _Ratio)
-            Next
-            Return L
+        Private Function determineLignes(ByVal monTexte As String)
+            Return (monTexte.Length / nbCharMaxParLigne(_LigneIndiv_Font.Size, _Xend - _Xbegin)) + 1
         End Function
 #End Region
     End Class

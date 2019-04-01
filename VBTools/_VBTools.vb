@@ -49,15 +49,18 @@ Module _VBTools
         Dim monDGV As New DataGridView()
         _form.Controls.Add(monDGV)
 
-        For i = 1 To 40
+        For i = 1 To 20
             maListe.Add(New With {.id = i,
                                  .name = "nom " & i,
-                                 .surname = "Prenom " & i})
+                                 .surname = "abcdefghi0abcdefghi0abcdefghi0abcdefghi" & i})
         Next
 
         monDGV.DataSource = maListe
 
         Dim monImp As New PrintDataGridView(monDGV)
+
+        monImp.textePremierePage = "Ceci est un texte de présentation de la liste"
+
         monImp.Impression()
 
     End Sub
