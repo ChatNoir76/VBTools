@@ -33,6 +33,7 @@ Namespace GestionDataGridView
         'Coordonnées de la zone d'impression
         Private _Xbegin, _Ybegin, _Xend, _Yend As Integer
         Private _LigneEnCours As Integer = 1
+        Private _modeAffichage As Affichage
 
         'Détermine la position d'écriture de la nouvelle ligne
         Private _Ycursor As Integer
@@ -126,6 +127,13 @@ Namespace GestionDataGridView
         End Property
 #End Region
 
+#Region "Enumération"
+        Public Enum Affichage As Byte
+            All = 1
+            Selection = 2
+        End Enum
+#End Region
+
 #Region "Constructeur"
         Sub New(ByRef MyDataGridView As DataGridView)
             If MyDataGridView.Rows.Count = 0 Then
@@ -136,7 +144,9 @@ Namespace GestionDataGridView
 #End Region
 
 #Region "Procèdure externe"
-        Public Overloads Sub Impression()
+        Public Overloads Sub Impression(Optional ByVal mode As Affichage = Affichage.All)
+            _modeAffichage = mode
+
             Try
                 Dim P As New PrintPreviewDialog
                 _PrintDoc.DefaultPageSettings.Landscape = True
@@ -199,7 +209,10 @@ Namespace GestionDataGridView
             '-  Ecriture du Corps de page  -
             '-------------------------------
             For i = _LigneEnCours To _DataGV.Rows.Count
-                WriteDataGridViewRow(e, i - 1)
+                'si ligne non sélectionnée en mode sélection
+                If _modeAffichage = Affichage.All Or (_modeAffichage = Affichage.Selection And _DataGV.Rows(i - 1).Selected) Then
+                    WriteDataGridViewRow(e, i - 1)
+                End If
                 If _NextPage Then
                     Exit For
                 End If
@@ -250,6 +263,7 @@ Namespace GestionDataGridView
 
             For i = 1 To _DataGV.ColumnCount
                 If _DataGV.Columns(i - 1).Visible = True Then
+
                     'calcul de la longueur du rectangle en proportion équivalente a celle du DataGridView
                     Xcol = _DataGV.Columns(i - 1).Width * (_Xend - _Xbegin) / XTotalDataGridView()
 
@@ -264,6 +278,7 @@ Namespace GestionDataGridView
                     e.Graphics.DrawRectangle(_CorpsTexte_Stylo, Rectangle.Round(monRectangle))
                     'prochaine coordonnée d'écriture
                     Xcursor += Xcol
+
                 End If
             Next
 

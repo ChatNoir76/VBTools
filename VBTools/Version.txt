@@ -1,4 +1,8 @@
-﻿28 Mars 19 : 1.2.0.0 [Build 6]
+﻿01 Avril 19 : 1.2.0.1 [Build 7]
+GestionDataGridView: 
+	Ajout fonction impression sélection ou non
+--------------------------------------------------------------------------------------------
+28 Mars 19 : 1.2.0.0 [Build 6]
 GestionDataGridView: (compatibilité NON préservée)
 	Correction Bug encadrement de l'entete
 	Correction Bug colonne non visible à ne pas afficher
