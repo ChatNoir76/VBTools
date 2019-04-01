@@ -2,8 +2,8 @@
 Imports VBTools.GestionDataGridView
 
 'mettre le fichier texte à jour pour le changement de version
-<Assembly: Reflection.AssemblyFileVersion("1.1.0.1")> 
-<Assembly: Reflection.AssemblyVersion("1.1.0.1")> 
+<Assembly: Reflection.AssemblyFileVersion("1.1.1.0")> 
+<Assembly: Reflection.AssemblyVersion("1.1.1.0")> 
 <Assembly: Reflection.AssemblyInformationalVersion("Build 4")> 
 
 Module _VBTools
@@ -55,13 +55,19 @@ Module _VBTools
         Dim monDGV As New DataGridView()
         _form.Controls.Add(monDGV)
 
-        For i = 1 To 40
+        For i = 1 To 20
             maListe.Add(New With {.id = i,
                                  .name = "nom " & i,
-                                 .surname = "Prenom " & i})
+                                 .surname = "abcdefghi0abcdefghi0abcdefghi0abcdefghi" & i})
         Next
 
         monDGV.DataSource = maListe
+
+        Dim monImp As New PrintDataGridView(monDGV)
+
+        monImp.textePremierePage = "Ceci est un texte de présentation de la liste"
+
+        monImp.Impression()
 
     End Sub
 
