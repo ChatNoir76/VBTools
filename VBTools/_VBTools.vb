@@ -15,7 +15,7 @@ Module _VBTools
 
         Try
 
-            testDialogBox()
+            testReflexionClasseAnonyme()
 
             Console.Read()
         Catch ex As VBToolsException
@@ -58,7 +58,7 @@ Module _VBTools
         For i = 1 To 20
             maListe.Add(New With {.id = i,
                                  .name = "nom " & i,
-                                 .surname = "abcdefghi0abcdefghi0abcdefghi0abcdefghi" & i})
+                                 .surname_un_truc_assez_gros_pour_foutre_le_bordel = "abcdefghi0abcdefghi0abcdefghi0abcdefghi" & i})
         Next
 
         monDGV.DataSource = maListe
