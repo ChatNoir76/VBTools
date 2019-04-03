@@ -1,4 +1,8 @@
-﻿01 Avril 19 : 1.2.0.1 [Build 7]
+﻿03 Avril 19 : 1.2.0.2 [Build 8]
+GestionDataGridView: 
+	Changement des propriétés par défaut lors de l'impression
+--------------------------------------------------------------------------------------------
+01 Avril 19 : 1.2.0.1 [Build 7]
 GestionDataGridView: 
 	Ajout fonction impression sélection ou non
 --------------------------------------------------------------------------------------------

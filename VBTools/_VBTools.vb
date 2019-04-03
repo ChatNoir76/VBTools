@@ -2,9 +2,9 @@
 Imports VBTools.GestionDataGridView
 
 'mettre le fichier texte à jour pour le changement de version
-<Assembly: Reflection.AssemblyFileVersion("1.2.0.1")> 
-<Assembly: Reflection.AssemblyVersion("1.2.0.1")> 
-<Assembly: Reflection.AssemblyInformationalVersion("Build 7")> 
+<Assembly: Reflection.AssemblyFileVersion("1.2.0.2")> 
+<Assembly: Reflection.AssemblyVersion("1.2.0.2")> 
+<Assembly: Reflection.AssemblyInformationalVersion("Build 8")> 
 
 Module _VBTools
     'application console pour test de la dll
