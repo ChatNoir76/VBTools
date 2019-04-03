@@ -12,19 +12,19 @@ Namespace GestionDataGridView
         Private _DataGV As DataGridView
 
         'Paramètres d'affichages ENTETE
-        Private _Entete_Font As Font = New Font("Arial", 20, FontStyle.Bold)
+        Private _Entete_Font As Font = New Font("Arial", 10, FontStyle.Bold)
         Private _Entete_Stylo As Pen = New Pen(Color.Black)
         Private _Entete_Brush As SolidBrush = New SolidBrush(Color.Black)
         Private _Entete_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Center,
                                                                               .LineAlignment = StringAlignment.Center}
         'Paramètres d'affichages CORPS DU DOCUMENT
-        Private _CorpsTexte_Font As Font = New Font("Arial", 15, FontStyle.Italic)
+        Private _CorpsTexte_Font As Font = New Font("Arial", 10, FontStyle.Regular)
         Private _CorpsTexte_Stylo As Pen = New Pen(Color.Black)
         Private _CorpsTexte_Brush As SolidBrush = New SolidBrush(Color.Black)
         Private _CorpsTexte_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Center}
 
         'Paramètres d'affichages Ligne individuelle
-        Private _LigneIndiv_Font As Font = New Font("Arial", 15, FontStyle.Italic)
+        Private _LigneIndiv_Font As Font = New Font("Arial", 10, FontStyle.Italic)
         Private _LigneIndiv_Stylo As Pen = New Pen(Color.White)
         Private _LigneIndiv_Brush As SolidBrush = New SolidBrush(Color.Black)
         Private _LigneIndiv_StringFormat As StringFormat = New StringFormat With {.Alignment = StringAlignment.Near}
