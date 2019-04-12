@@ -1,4 +1,4 @@
-﻿12 Avril 19 : 1.2.0.+1
+﻿12 Avril 19 : 1.2.0.3 [Build 9]
 DialogBox: 
 	Correction du click "ok" alors que le dossier n'est pas sélectionné
 	Correction du tri par l'extention demandé
