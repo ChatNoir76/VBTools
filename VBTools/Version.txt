@@ -1,4 +1,9 @@
-﻿03 Avril 19 : 1.2.0.2 [Build 8]
+﻿12 Avril 19 : 1.2.0.+1
+DialogBox: 
+	Correction du click "ok" alors que le dossier n'est pas sélectionné
+	Correction du tri par l'extention demandé
+--------------------------------------------------------------------------------------------	
+03 Avril 19 : 1.2.0.2 [Build 8]
 GestionDataGridView: 
 	Changement des propriétés par défaut lors de l'impression
 --------------------------------------------------------------------------------------------

@@ -255,7 +255,7 @@ Namespace DialogBox
 #End Region
 
 #Region "Gestion ChoixFichier en Externe"
-        Public Sub ShowDialog()
+        Public Overridable Sub ShowDialog()
             Try
                 _Form_Main.ShowDialog()
             Catch ex As Exception
@@ -451,6 +451,7 @@ Namespace DialogBox
             End If
 
             CtrlConstruction()
+            MyBase.MainForm_BTOK_Enabled = False
         End Sub
         Private Sub CtrlConstruction()
             'TREEVIEW
@@ -552,7 +553,7 @@ Namespace DialogBox
             End Get
             Set(ByVal value As String())
                 If Not IsNothing(value) Then
-                    Dim _ListExtAPrendre As New List(Of String)
+                    _ListExtAPrendre = New List(Of String)
                     Dim desc As New System.Text.StringBuilder()
 
                     For Each ext As String In value
@@ -566,7 +567,7 @@ Namespace DialogBox
                     'retire le dernier caractère
                     desc.Remove(desc.Length - 1, 1)
 
-                    TXT_CBox.Text = String.Format(_EXT_SPECIF_DESCRIPTION, desc.ToString)
+                    TXT_CBox.Text = String.Format(_EXT_SPECIF_DESCRIPTION, value)
                 Else
                     _ListExtAPrendre = Nothing
                     TXT_CBox.Text = _EXT_ALL_DESCRIPTION
@@ -592,12 +593,16 @@ Namespace DialogBox
                     .BringToFront()
                 End With
 
-                MyBase.RemplissageTreeView(_ListExtAPrendre)
-
             Catch ex As Exception
                 Throw New VBToolsException(_ERR_INITIALISATION, ex)
             End Try
         End Sub
 #End Region
+
+        Public Overrides Sub ShowDialog()
+            MyBase.RemplissageTreeView(_ListExtAPrendre)
+            MyBase.ShowDialog()
+        End Sub
+
     End Class
 End Namespace
